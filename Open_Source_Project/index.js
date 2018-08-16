@@ -1,4 +1,6 @@
 //Citation: https://socket.io/docs/
+//Citation: https://socket.io/docs/server-api/
+//Citation: https://socket.io/docs/client-api/
 //I referred to the socket.io website for help on the
 //server side code for the project.
 
