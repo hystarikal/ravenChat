@@ -1,0 +1,175 @@
+<html>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <head>
+        <title>Raven</title>
+        <style>
+            body{
+                margin: 0;
+            }
+            .toolbar {
+                display: none;
+                background-color: gray;
+                height: 10%;
+                width: 100%;
+                color: white;
+            }
+
+            .toolbar_navigation {
+                display: flex;
+                justify-content: space-between;
+                height: 100%;
+                align-items: center;
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+
+            .toolbar_left_items ul, .toolbar_right_items ul {
+                list-style: none;
+                margin: 0;
+                padding: 0;
+                display: flex;
+            }
+
+            .toolbar_left_items li, .toolbar_right_items li {
+                padding: 0 .5rem;
+            }
+
+            .Userwindow{
+                align-items: center;
+                margin: 20% 20%;
+            }
+
+            #chat{
+                height: 95%;
+            }
+
+            #contentWrap{
+                display: none;
+            }
+            .containers-items{
+                display: grid;
+                grid-template-columns: 20% 80%;
+                height: 90%;
+            }
+
+            .online_container{
+                border: 5px #000 solid;
+                padding-left: 10px;
+            }
+
+
+
+            #chatWrap{
+                float: right;
+                border: 5px #000 solid;
+                width: 100%;
+            }
+
+            img{
+                height: 70%;
+                width: 20%;
+            }
+        </style>
+    </head>
+
+    <body>
+        <header class="toolbar">
+            <nav class="toolbar_navigation">
+                <div class="toolbar_left_items">
+                    <ul>
+                        <img src="https://orig00.deviantart.net/5162/f/2012/142/5/f/raven_eclipse_symbol_by_guinn1190-d50omld.png"/>
+                        <li><a>Raven</a></li>
+                    </ul>
+                </div>
+
+                <div class="toolbar_right_items">
+                    <ul>
+                        <li><a>User Name</a></li>
+                        <li><a class='logout-button'>Logout Button </a></li>
+                     </ul>
+                </div>
+            </nav>
+        </header>
+
+        <div id="contentWrap">
+            <div class="containers-items">
+
+                <div class="online_container">
+                    <label style="text-align: center">Online Users</label>
+                    <div id="users"></div>
+                </div>
+
+                <div id="chatWrap">
+                    <div id="chat"></div>
+                    <form id="send-message">
+                        <input size="35" id="message" style="width: 90%" placeholder="Enter message" />
+                        <input type="submit" />
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="Userwindow">
+            <p>Please enter a username:</p>
+            <p id="usernameError"></p>
+            <form id="username-set">
+                <i class="fa fa-user icon"></i>
+                <input size="35" id="username" />
+                <input type="submit" />
+            </form>
+        </div>
+
+        <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+        <script>
+            jQuery(function($){
+
+                var socket = io.connect();
+                var $ravenForm = $('#send-message');
+                var $ravenWindow = $('#message');
+                var $messaging = $('#chat');
+                var $usernameForm = $('#username-set');
+                var $usernameError = $('#usernameError');
+                var $usernameWindow = $('#username');
+                var $users = $('#users');
+
+                $ravenForm.submit(function(e){
+                    e.preventDefault();
+                    socket.emit('Message sending', $ravenWindow.val());
+                    $ravenWindow.val('');
+                });
+
+                socket.on('sending new message', function(data){
+                    $messaging.append('<b>' + data.user + ': <b>' + data.msg + "<br/>");
+                });
+
+                $usernameForm.submit(function(e){
+                    e.preventDefault();
+                    socket.emit('Adding new user', $usernameWindow.val(), function(data){
+                        if(data){
+                            $('.Userwindow').hide();
+                            $('#contentWrap').show();
+                            $('.toolbar').show();
+                        }
+                        else{
+                            $usernameError.html('Username is not available. Please try again...');
+                        }
+                    });
+
+                    //Displays the list of online users in the application.
+                    socket.on('usernames', function(data){
+                        var html = '';
+                        for(i=0; i<data.length; i++){
+                            html += data[i]+ ' (Online)' + '<br/>' + '<br/>'
+                        }
+                        $users.html(html);
+                    });
+
+                    $usernameWindow.val('');
+                })
+            })
+        </script>
+    </body>
+</html>
